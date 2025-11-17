@@ -19,6 +19,11 @@ web_extra_exposed_ports:
       http_port: 3000
       https_port: 3001
 
+web_extra_daemons:
+    - name: "queue-worker"
+      command: "php artisan queue:work --tries=1"
+      directory: /var/www/html
+
 # Key features of DDEV's config.yaml:
 
 # name: <projectname> # Name of the project, automatically provides
