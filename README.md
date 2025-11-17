@@ -38,6 +38,149 @@ ddev start    # Start the DDEV environment
 make dev      # Launch your development environment
 ```
 
+## Mail Configuration
+
+This application uses Laravel's mail system for sending verification emails to poll worker applicants.
+
+### Development Environment
+
+By default, the application is configured to use the `log` mail driver, which writes emails to the log file instead of sending them. This is perfect for local development and testing.
+
+To view emails in development:
+1. Check the log file at `storage/logs/laravel.log`
+2. Or use Laravel Pail: `ddev artisan pail`
+
+### Production Setup
+
+For production, you'll need to configure a real mail service. Update your `.env` file with one of the following options:
+
+#### Option 1: SMTP (Generic)
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=your_username
+MAIL_PASSWORD=your_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@example.com"
+MAIL_FROM_NAME="Poll Worker System"
+```
+
+#### Option 2: Mailtrap (Testing)
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_mailtrap_username
+MAIL_PASSWORD=your_mailtrap_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@example.com"
+MAIL_FROM_NAME="Poll Worker System"
+```
+
+#### Option 3: Mailgun
+```env
+MAIL_MAILER=mailgun
+MAILGUN_DOMAIN=your-domain.mailgun.org
+MAILGUN_SECRET=your-mailgun-api-key
+MAIL_FROM_ADDRESS="noreply@example.com"
+MAIL_FROM_NAME="Poll Worker System"
+```
+
+#### Option 4: Amazon SES
+```env
+MAIL_MAILER=ses
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_DEFAULT_REGION=us-east-1
+MAIL_FROM_ADDRESS="noreply@example.com"
+MAIL_FROM_NAME="Poll Worker System"
+```
+
+### Queue Configuration
+
+The application uses database-driven queues to send emails asynchronously. This prevents blocking the user interface while emails are being sent.
+
+#### Running the Queue Worker
+
+In development, the queue worker is automatically started when you run `make dev`.
+
+For production, you should use a process manager like Supervisor to keep the queue worker running:
+
+```bash
+ddev artisan queue:work --tries=3 --timeout=90
+```
+
+#### Queue Management Commands
+
+```bash
+# View failed jobs
+ddev artisan queue:failed
+
+# Retry all failed jobs
+ddev artisan queue:retry all
+
+# Retry a specific failed job
+ddev artisan queue:retry {job-id}
+
+# Clear all failed jobs
+ddev artisan queue:flush
+
+# Monitor queue in real-time
+ddev artisan queue:monitor
+```
+
+#### Production Queue Setup with Supervisor
+
+Create a supervisor configuration file at `/etc/supervisor/conf.d/laravel-worker.conf`:
+
+```ini
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/your/application/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/path/to/your/application/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+Then reload supervisor:
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start laravel-worker:*
+```
+
+### Email Verification Flow
+
+1. User submits registration form
+2. Application creates application record and queues verification email
+3. Queue worker processes the job and sends email
+4. User clicks verification link in email
+5. Application verifies email and creates user account
+
+### Testing Email Configuration
+
+To test your email configuration:
+
+```bash
+ddev artisan tinker
+```
+
+Then in the Tinker console:
+```php
+Mail::raw('Test email', function ($message) {
+    $message->to('test@example.com')->subject('Test Email');
+});
+```
+
+Check your mail service dashboard or logs to confirm the email was sent successfully.
+
 ## Contribution and License
 
 This project is open source under the MIT License. We welcome contributions and suggestions!
