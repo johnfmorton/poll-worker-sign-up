@@ -1,8 +1,6 @@
 <x-public-layout>
     <x-slot:title>Poll Worker Registration</x-slot:title>
 
-    
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             @if(session('success'))
@@ -58,7 +56,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
                                 </svg>
                                 <p class="text-gray-700 leading-relaxed">
-                                    <span class="font-semibold">Residency requirement</span> — You must be a US citizen and a registered voter in Warren CT to serve
+                                    <span class="font-semibold">Requirements</span> — You must be a US citizen and a registered voter in Warren CT to serve
                                 </p>
                             </div>
                             
@@ -78,7 +76,7 @@
                                 </li>
                                 <li class="flex items-start">
                                     <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-semibold mr-3 shrink-0">3</span>
-                                    <span>Training details sent before each election</span>
+                                    <span>Before each election we will be in touch with more details</span>
                                 </li>
                             </ol>
                         </div>
@@ -157,7 +155,7 @@
                                     type="submit" 
                                     class="w-full px-6 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
                                 >
-                                    Begin Poll Worker Registration
+                                    Submit Your Information
                                 </button>
                                 
                                 <div class="flex items-start text-sm text-gray-600">

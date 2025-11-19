@@ -20,13 +20,11 @@
                     Become a Poll Worker
                 </h1>
                 <p class="text-blue-100 text-lg max-w-2xl mx-auto">
-                    Town of Warren · Voter Registration Office
+                    Town of Warren, Connecticut · Voter Registration Office
                 </p>
             </div>
         </div>
             </header>
-
-
 
             <!-- Page Heading -->
             @isset($header)
