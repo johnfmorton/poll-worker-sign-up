@@ -10,29 +10,23 @@
  
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-gradient-to-b from-gray-50 to-gray-100">
+    <body class="font-sans antialiased bg-linear-to-b from-gray-50 to-gray-100">
         <div class="min-h-screen flex flex-col">
             <!-- Public Header -->
-            <header class="bg-white shadow-sm border-b border-gray-200">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900">
-                                Warren, CT Poll Worker Registration
-                            </h1>
-                            <p class="text-sm text-gray-600 mt-1">
-                                Town of Warren Voter Registration Office
-                            </p>
-                        </div>
-                        <a 
-                            href="{{ route('login') }}" 
-                            class="text-sm text-gray-600 hover:text-gray-900 font-medium"
-                        >
-                            Admin Login
-                        </a>
-                    </div>
-                </div>
+            <header class="bg-blue-700 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-3">
+                    Become a Poll Worker
+                </h1>
+                <p class="text-blue-100 text-lg max-w-2xl mx-auto">
+                    Town of Warren · Voter Registration Office
+                </p>
+            </div>
+        </div>
             </header>
+
+
 
             <!-- Page Heading -->
             @isset($header)

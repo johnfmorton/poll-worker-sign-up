@@ -6,13 +6,13 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('kiro-welcome');
-})->name('home');
+// Route::get('/', function () {
+//     return view('kiro-welcome');
+// })->name('home');
 
 // Public registration routes
-Route::get('/register', [ApplicationController::class, 'create'])->name('applications.create');
-Route::post('/register', [ApplicationController::class, 'store'])->name('applications.store');
+Route::get('/', [ApplicationController::class, 'create'])->name('applications.create');
+Route::post('/', [ApplicationController::class, 'store'])->name('applications.store');
 
 // Email verification routes
 Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verification.verify');
