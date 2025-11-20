@@ -57,6 +57,7 @@ class CreateAdminUser extends Command
             foreach ($validator->errors()->all() as $error) {
                 $this->error("  - {$error}");
             }
+
             return self::FAILURE;
         }
 
@@ -70,7 +71,7 @@ class CreateAdminUser extends Command
         ]);
 
         $this->newLine();
-        $this->info("Admin user created successfully!");
+        $this->info('Admin user created successfully!');
         $this->table(
             ['ID', 'Name', 'Email', 'Admin'],
             [[$user->id, $user->name, $user->email, 'Yes']]

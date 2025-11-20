@@ -12,6 +12,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationService
 {
@@ -159,5 +160,79 @@ class ApplicationService
 
         $application->refresh();
         $this->email_service->sendVerificationEmail($application);
+    }
+
+    /**
+     * Get dashboard statistics for admin overview.
+     *
+     * @return array<string, int>
+     */
+    public function getDashboardStats(): array
+    {
+        return [
+            'pending_residency' => $this->application_repository->countByResidencyStatus('pending'),
+            'verified_awaiting_approval' => $this->application_repository->countVerifiedAwaitingApproval(),
+            'approved_no_party' => $this->application_repository->countApprovedWithoutParty(),
+            'total_applications' => $this->application_repository->countTotal(),
+        ];
+    }
+
+    /**
+     * Export all applications to CSV format.
+     */
+    public function exportApplicationsToCSV(): StreamedResponse
+    {
+        $applications = $this->application_repository->getAllForExport();
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="poll-workers-'.date('Y-m-d').'.csv"',
+        ];
+
+        $callback = function () use ($applications) {
+            $file = fopen('php://output', 'w');
+
+            // CSV header row
+            fputcsv($file, [
+                'ID',
+                'Name',
+                'Email',
+                'Street Address',
+                'Email Verified',
+                'Email Verified At',
+                'Residency Status',
+                'Residency Validated At',
+                'Residency Validated By',
+                'Party Affiliation',
+                'Party Assigned At',
+                'Party Assigned By',
+                'Created At',
+                'Updated At',
+            ]);
+
+            // Data rows
+            foreach ($applications as $app) {
+                fputcsv($file, [
+                    $app->id,
+                    $app->name,
+                    $app->email,
+                    $app->street_address,
+                    $app->email_verified_at ? 'Yes' : 'No',
+                    $app->email_verified_at?->format('Y-m-d H:i:s'),
+                    $app->residency_status,
+                    $app->residency_validated_at?->format('Y-m-d H:i:s'),
+                    $app->residencyValidator?->name,
+                    $app->party_affiliation,
+                    $app->party_assigned_at?->format('Y-m-d H:i:s'),
+                    $app->partyAssigner?->name,
+                    $app->created_at->format('Y-m-d H:i:s'),
+                    $app->updated_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

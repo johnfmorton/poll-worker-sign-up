@@ -38,7 +38,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticatedAs($user);
-        $response->assertRedirect('/');
+        $response->assertRedirect(route('admin.dashboard'));
     }
 
     public function test_user_cannot_login_with_invalid_credentials(): void

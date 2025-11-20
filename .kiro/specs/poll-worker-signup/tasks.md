@@ -141,3 +141,23 @@
   - Add consistent styling across all views
   - Remove unused blade templates
   - _Requirements: 3.4, 4.1_
+
+- [x] 21. Implement admin dashboard overview
+  - Add dashboard method to Admin\ApplicationController
+  - Create getDashboardStats method in ApplicationService
+  - Implement repository methods: countByResidencyStatus, countVerifiedAwaitingApproval, countApprovedWithoutParty, countTotal
+  - Create admin dashboard view with statistics cards
+  - Add navigation links from statistics to filtered application lists
+  - Style dashboard with Tailwind CSS
+  - Update admin routes to show dashboard as default landing page after login
+  - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
+
+- [x] 22. Implement CSV export functionality
+  - Add export method to Admin\ApplicationController that returns StreamedResponse
+  - Create exportApplicationsToCSV method in ApplicationService
+  - Implement getAllForExport method in ApplicationRepository
+  - Generate CSV with proper headers and all application data
+  - Include timestamps and admin names in export
+  - Add export button to application list view
+  - Set appropriate CSV headers for file download
+  - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5_

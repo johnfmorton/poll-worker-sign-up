@@ -103,4 +103,52 @@ class ApplicationRepository
 
         return $query->orderBy('created_at', 'desc')->paginate(20);
     }
+
+    /**
+     * Count applications by residency status.
+     */
+    public function countByResidencyStatus(string $status): int
+    {
+        return Application::where('residency_status', $status)->count();
+    }
+
+    /**
+     * Count verified applications awaiting residency approval.
+     */
+    public function countVerifiedAwaitingApproval(): int
+    {
+        return Application::whereNotNull('email_verified_at')
+            ->where('residency_status', 'pending')
+            ->count();
+    }
+
+    /**
+     * Count approved residents without party assignment.
+     */
+    public function countApprovedWithoutParty(): int
+    {
+        return Application::where('residency_status', 'approved')
+            ->whereNull('party_affiliation')
+            ->count();
+    }
+
+    /**
+     * Count total applications.
+     */
+    public function countTotal(): int
+    {
+        return Application::count();
+    }
+
+    /**
+     * Get all applications for CSV export with relationships.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, Application>
+     */
+    public function getAllForExport(): \Illuminate\Database\Eloquent\Collection
+    {
+        return Application::with(['residencyValidator', 'partyAssigner'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
 }

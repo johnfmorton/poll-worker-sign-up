@@ -24,6 +24,12 @@
                         
                         <div class="flex items-center space-x-4">
                             <a 
+                                href="{{ route('admin.dashboard') }}" 
+                                class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.dashboard') ? 'bg-gray-100' : '' }}"
+                            >
+                                Dashboard
+                            </a>
+                            <a 
                                 href="{{ route('admin.applications.index') }}" 
                                 class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.applications.*') ? 'bg-gray-100' : '' }}"
                             >

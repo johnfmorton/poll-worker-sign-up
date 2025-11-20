@@ -124,3 +124,27 @@ This system enables prospective poll workers in Warren, CT to sign up for servic
 3. WHEN a new verification link is generated, THE Poll Worker System SHALL send an email to the applicant's email address
 4. WHEN the verification email is sent, THE Poll Worker System SHALL display a confirmation message to the admin user
 5. THE Poll Worker System SHALL invalidate previous verification links when a new link is generated
+
+### Requirement 10
+
+**User Story:** As an admin user, I want to see a dashboard overview of applications requiring review, so that I can quickly identify which new signups need my attention
+
+#### Acceptance Criteria
+
+1. WHEN an admin user logs in successfully, THE Poll Worker System SHALL display a dashboard overview page
+2. THE Poll Worker System SHALL display a count of applications with pending residency validation
+3. THE Poll Worker System SHALL display a count of verified applications awaiting residency approval
+4. THE Poll Worker System SHALL display a count of approved residents without party assignment
+5. THE Poll Worker System SHALL provide navigation links from the dashboard to filtered application lists for each status category
+
+### Requirement 11
+
+**User Story:** As an admin user, I want to export all poll worker data to a CSV file, so that I can import the data into Google Sheets or Excel for further analysis and reporting
+
+#### Acceptance Criteria
+
+1. WHEN an admin user views the application list page, THE Poll Worker System SHALL display an export button
+2. WHEN an admin user activates the export function, THE Poll Worker System SHALL generate a CSV file containing all application data
+3. THE Poll Worker System SHALL include all relevant fields in the CSV export including name, email, street address, email verification status, residency status, and party affiliation
+4. THE Poll Worker System SHALL include timestamps for email verification, residency validation, and party assignment in the CSV export
+5. WHEN the CSV file is generated, THE Poll Worker System SHALL initiate a file download to the admin user's browser

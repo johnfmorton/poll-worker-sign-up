@@ -63,12 +63,14 @@ graph TB
 
 2. **Admin Management Flow**
    - Admin logs in via authentication page
-   - Views dashboard with application list
+   - Views dashboard overview with statistics on applications needing review
+   - Navigates to application list (optionally filtered)
    - Filters/searches applications
    - Selects application to view details
    - Validates residency status
    - Assigns political party
    - Edits or deletes applications as needed
+   - Exports all applications to CSV for external analysis
 
 ## Components and Interfaces
 
@@ -320,12 +322,20 @@ use App\Services\ApplicationService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationController extends Controller
 {
     public function __construct(
         private ApplicationService $applicationService
     ) {}
+
+    public function dashboard(): View
+    {
+        $stats = $this->applicationService->getDashboardStats();
+
+        return view('admin.dashboard', compact('stats'));
+    }
 
     public function index(Request $request): View
     {
@@ -408,6 +418,11 @@ class ApplicationController extends Controller
         $this->applicationService->resendVerificationEmail($id);
 
         return back()->with('success', 'Verification email resent.');
+    }
+
+    public function export(): StreamedResponse
+    {
+        return $this->applicationService->exportApplicationsToCSV();
     }
 }
 ```
@@ -544,6 +559,72 @@ class ApplicationService
         $application->refresh();
         $this->emailService->sendVerificationEmail($application);
     }
+
+    public function getDashboardStats(): array
+    {
+        return [
+            'pending_residency' => $this->applicationRepository->countByResidencyStatus('pending'),
+            'verified_awaiting_approval' => $this->applicationRepository->countVerifiedAwaitingApproval(),
+            'approved_no_party' => $this->applicationRepository->countApprovedWithoutParty(),
+            'total_applications' => $this->applicationRepository->countTotal(),
+        ];
+    }
+
+    public function exportApplicationsToCSV(): StreamedResponse
+    {
+        $applications = $this->applicationRepository->getAllForExport();
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="poll-workers-' . date('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($applications) {
+            $file = fopen('php://output', 'w');
+
+            // CSV header row
+            fputcsv($file, [
+                'ID',
+                'Name',
+                'Email',
+                'Street Address',
+                'Email Verified',
+                'Email Verified At',
+                'Residency Status',
+                'Residency Validated At',
+                'Residency Validated By',
+                'Party Affiliation',
+                'Party Assigned At',
+                'Party Assigned By',
+                'Created At',
+                'Updated At',
+            ]);
+
+            // Data rows
+            foreach ($applications as $app) {
+                fputcsv($file, [
+                    $app->id,
+                    $app->name,
+                    $app->email,
+                    $app->street_address,
+                    $app->email_verified_at ? 'Yes' : 'No',
+                    $app->email_verified_at?->format('Y-m-d H:i:s'),
+                    $app->residency_status,
+                    $app->residency_validated_at?->format('Y-m-d H:i:s'),
+                    $app->residencyValidator?->name,
+                    $app->party_affiliation,
+                    $app->party_assigned_at?->format('Y-m-d H:i:s'),
+                    $app->partyAssigner?->name,
+                    $app->created_at->format('Y-m-d H:i:s'),
+                    $app->updated_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }
 ```
 
@@ -647,6 +728,37 @@ class ApplicationRepository
 
         return $query->orderBy('created_at', 'desc')->paginate(20);
     }
+
+    public function countByResidencyStatus(string $status): int
+    {
+        return Application::where('residency_status', $status)->count();
+    }
+
+    public function countVerifiedAwaitingApproval(): int
+    {
+        return Application::whereNotNull('email_verified_at')
+            ->where('residency_status', 'pending')
+            ->count();
+    }
+
+    public function countApprovedWithoutParty(): int
+    {
+        return Application::where('residency_status', 'approved')
+            ->whereNull('party_affiliation')
+            ->count();
+    }
+
+    public function countTotal(): int
+    {
+        return Application::count();
+    }
+
+    public function getAllForExport(): Collection
+    {
+        return Application::with(['residencyValidator', 'partyAssigner'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
 }
 ```
 
@@ -719,6 +831,44 @@ class VerificationEmail extends Mailable
     }
 }
 ```
+
+### Views
+
+#### Admin Dashboard (admin.dashboard)
+The dashboard overview displays key statistics and quick navigation:
+
+- **Statistics Cards**: Display counts for:
+  - Total applications
+  - Pending residency validation
+  - Verified applications awaiting approval
+  - Approved residents without party assignment
+- **Quick Links**: Each statistic card links to a filtered view of the application list
+- **Navigation**: Links to full application list and other admin functions
+
+#### Application List (admin.applications.index)
+The application list view includes:
+
+- **Export Button**: Prominent button to download CSV file of all applications
+- **Filter Controls**: Search box and dropdown filters for residency status, party affiliation, and verification status
+- **Application Table**: Displays all applications with key information
+- **Pagination**: Shows 20 applications per page
+
+#### CSV Export Format
+The exported CSV file includes the following columns:
+- ID
+- Name
+- Email
+- Street Address
+- Email Verified (Yes/No)
+- Email Verified At (timestamp)
+- Residency Status
+- Residency Validated At (timestamp)
+- Residency Validated By (admin name)
+- Party Affiliation
+- Party Assigned At (timestamp)
+- Party Assigned By (admin name)
+- Created At (timestamp)
+- Updated At (timestamp)
 
 ## Data Models
 
@@ -852,6 +1002,9 @@ erDiagram
   - Login with valid credentials
   - Login with invalid credentials
   - Access admin routes without authentication
+- Admin dashboard
+  - View dashboard statistics
+  - Navigate to filtered application lists from dashboard
 - Admin CRUD operations
   - View application list
   - Filter and search applications
@@ -861,6 +1014,7 @@ erDiagram
   - Update residency status
   - Assign party affiliation
   - Resend verification email
+  - Export applications to CSV
 
 ### Integration Tests
 - Complete registration to verification flow

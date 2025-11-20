@@ -9,12 +9,23 @@ use App\Services\ApplicationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationController extends Controller
 {
     public function __construct(
         private ApplicationService $application_service
     ) {}
+
+    /**
+     * Display the admin dashboard with statistics.
+     */
+    public function dashboard(): View
+    {
+        $stats = $this->application_service->getDashboardStats();
+
+        return view('admin.dashboard', compact('stats'));
+    }
 
     /**
      * Display a listing of applications with filters.
@@ -121,5 +132,13 @@ class ApplicationController extends Controller
         $this->application_service->resendVerificationEmail($id);
 
         return back()->with('success', 'Verification email resent successfully.');
+    }
+
+    /**
+     * Export all applications to CSV file.
+     */
+    public function export(): StreamedResponse
+    {
+        return $this->application_service->exportApplicationsToCSV();
     }
 }
