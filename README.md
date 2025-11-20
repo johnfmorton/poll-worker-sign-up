@@ -1,186 +1,328 @@
-# Kiro + Laravel Skeleton Template
+# About the Poll Worker Signup System
 
-Welcome to the Kiro + Laravel Skeleton Template.
+## Project Overview
 
-## Introduction
+The Poll Worker Signup System is a Laravel 12 application designed to manage the registration and administration of poll workers for Warren, CT. This project was built using the [Kiro Laravel Skeleton Template](https://github.com/johnfmorton/kiro-laravel-skeleton), which provides a production-ready foundation with DDEV local development, Vite integration, and comprehensive steering documents.
 
-This repository is a fully-formed Laravel starter built from the experience of creating a real-world application with Kiro. Kiro provides a strong foundation for beginning any project, but  the steering documents and build-system structure included in this template provide a production-ready workspace to get your project started on the right foot. You don't have to fuss with the toolkit. You just start building.
+## What This Application Does
 
-You start your project with a complete development environment powered by DDEV, a working Vite setup with hot-module reloading, and a set of guiding documents that help shape conventions, workflows, and team collaboration from day one. Using this template saves at least an hour of initial setup time compared to assembling all of these pieces manually. It provides a consistent, fast, and opinionated starting point so you can focus on building features instead of wiring the project together.
+This system serves two primary audiences:
 
-## Features
+### For Poll Worker Applicants (Public Interface)
+- Submit registration applications with name, email, and street address
+- Receive email verification to confirm identity
+- Automatic account creation upon email verification
 
-* Laravel Ready: Comes pre-configured with a complete Laravel setup tailored for local development using DDEV.
-* Vite Integration: Includes a Vite build process with hot module reloading, making front-end development smooth and efficient.
-* Kiro Specs: Comes with highly tuned Kiro spec documents to ensure your code is human-readable and well-structured from the start.
-* Makefile Included: Start your project simply by running make dev for an easy, no-fuss development experience.
+### For Voter Registrar Staff (Admin Interface)
+- View dashboard with application statistics and quick filters
+- Toggle public registration on/off as needed
+- Review and manage all applications
+- Validate residency status (approve/reject)
+- Assign political party affiliations
+- Edit or delete applications
+- Resend verification emails
+- Export all applications to CSV for external analysis
 
-## DDEV Requirements
+## Key Features
 
-Since the project uses DDEV for local enviroment of your Laravel project, you'll need to reference the [DDEV getting started section](https://ddev.com/get-started/) of the documenation. You'll find instructions for Mac, Windows and Linux. Basically, you'll need to be able to install Docker images, and, depending on your platform, a way for local URLs to resolve.
+### Registration Toggle System
+The voter registrar can enable or disable public registration at any time. When disabled:
+- The registration form is displayed but all fields are disabled
+- A message directs visitors to contact the registrar's office
+- Server-side validation prevents automated submissions
+- The system gracefully handles the transition between states
 
-## Quick Start
+### Email Verification Flow
+- Applications are not complete until email is verified
+- Verification links expire after 48 hours
+- Admins can resend verification emails if needed
+- User accounts are automatically created upon verification
 
-1. **Clone the repo**: `git clone <https://github.com/johnfmorton/kiro-laravel-skeleton.git> your-project-name`
-2. **Navigate to the directory**: `cd your-project-name`
-3. **Start DDEV**: `ddev start`
-4. **Run initial setup**: `make setup` (installs dependencies, generates app key, runs migrations, builds assets)
-5. **Start development**: `make dev` (launches browser, runs migrations, starts Vite dev server)
+### Comprehensive Admin Dashboard
+- Statistics cards showing applications needing attention
+- Quick navigation to filtered application lists
+- Registration toggle control prominently displayed
+- Clean, intuitive interface built with Tailwind CSS
 
-That's it! Your Laravel app will be running at the URL shown by DDEV (typically `https://your-project-name.ddev.site`).
+### CSV Export
+Export all application data including:
+- Applicant information
+- Verification status and timestamps
+- Residency validation details
+- Party affiliation assignments
+- Admin actions with timestamps and names
 
-## Daily Development
+## Built on the Kiro Laravel Skeleton
 
-After initial setup, just run:
+This project leverages the Kiro Laravel Skeleton Template, which provides:
 
+### Pre-configured Development Environment
+- **DDEV Integration**: Complete Docker-based local development with PHP 8.4, MySQL 8.4, and nginx
+- **Vite Setup**: Hot module reloading for efficient frontend development
+- **Queue System**: Database-driven queues for asynchronous email sending
+- **Makefile Commands**: Simple `make dev` and `make setup` commands for common tasks
+
+### Comprehensive Steering Documents
+The skeleton includes detailed guidance documents that shaped this project's architecture:
+- **tech.md**: Technology stack and common commands
+- **structure.md**: Project organization and naming conventions
+- **laravel.md**: Laravel best practices and coding standards
+- **ddev.md**: DDEV-specific workflows and commands
+- **product.md**: Product overview and context
+
+These steering documents ensure consistent code quality, proper architecture patterns, and maintainable code from day one.
+
+### Production-Ready Foundation
+- PSR-12 coding standards with Laravel Pint
+- Strict typing throughout the codebase
+- Service layer and repository patterns
+- Comprehensive PHPDoc documentation
+- Security best practices built-in
+
+## Technology Stack
+
+- **Framework**: Laravel 12 with PHP 8.4
+- **Database**: SQLite (development) / MySQL 8.4 (production via DDEV)
+- **Frontend**: Tailwind CSS 4 with Vite 7 for asset bundling
+- **Authentication**: Laravel's built-in authentication system
+- **Email**: Laravel Mail with queue support
+- **Development**: DDEV for containerized local environment
+
+## Architecture Highlights
+
+### Clean Separation of Concerns
+```
+Public Interface → Controllers → Services → Repositories → Models → Database
+Admin Interface  ↗
+```
+
+### Service Layer Pattern
+Business logic is encapsulated in service classes:
+- `ApplicationService`: Handles application lifecycle and business rules
+- `EmailService`: Manages email sending operations
+
+### Repository Pattern
+Data access is abstracted through repositories:
+- `ApplicationRepository`: Provides clean interface for application data operations
+- Eager loading to prevent N+1 queries
+- Filtering and pagination built-in
+
+### Enums for Type Safety
+- `ResidencyStatus`: PENDING, APPROVED, REJECTED
+- `PartyAffiliation`: DEMOCRAT, REPUBLICAN, INDEPENDENT, UNAFFILIATED
+
+## Project Structure
+
+```
+app/
+├── Enums/                    # Type-safe enumerations
+├── Http/
+│   ├── Controllers/          # Public controllers
+│   │   ├── ApplicationController.php
+│   │   └── VerificationController.php
+│   ├── Controllers/Admin/    # Admin controllers
+│   │   └── ApplicationController.php
+│   └── Middleware/
+│       └── AdminMiddleware.php
+├── Mail/
+│   └── VerificationEmail.php
+├── Models/
+│   ├── Application.php
+│   ├── Setting.php
+│   └── User.php
+├── Repositories/
+│   └── ApplicationRepository.php
+└── Services/
+    ├── ApplicationService.php
+    └── EmailService.php
+
+resources/
+├── css/
+│   └── app.css              # Tailwind CSS
+├── js/
+│   └── app.js
+└── views/
+    ├── admin/               # Admin interface views
+    ├── applications/        # Public registration views
+    └── emails/              # Email templates
+
+database/
+├── migrations/              # Database schema
+└── seeders/                 # Initial data (admin user)
+
+tests/
+├── Feature/                 # Feature tests
+└── Unit/                    # Unit tests
+```
+
+## Getting Started
+
+### Prerequisites
+- Docker Desktop (for DDEV)
+- Git
+
+### Initial Setup
+
+1. Clone the repository:
 ```bash
-ddev start    # Start the DDEV environment
-make dev      # Launch your development environment
+git clone <repository-url> poll-worker-signup
+cd poll-worker-signup
 ```
 
-## Mail Configuration
-
-This application uses Laravel's mail system for sending verification emails to poll worker applicants.
-
-### Development Environment
-
-By default, the application is configured to use the `log` mail driver, which writes emails to the log file instead of sending them. This is perfect for local development and testing.
-
-To view emails in development:
-1. Check the log file at `storage/logs/laravel.log`
-2. Or use Laravel Pail: `ddev artisan pail`
-
-### Production Setup
-
-For production, you'll need to configure a real mail service. Update your `.env` file with one of the following options:
-
-#### Option 1: SMTP (Generic)
-```env
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.example.com
-MAIL_PORT=587
-MAIL_USERNAME=your_username
-MAIL_PASSWORD=your_password
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="noreply@example.com"
-MAIL_FROM_NAME="Poll Worker System"
+2. Start DDEV:
+```bash
+ddev start
 ```
 
-#### Option 2: Mailtrap (Testing)
-```env
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.mailtrap.io
-MAIL_PORT=2525
-MAIL_USERNAME=your_mailtrap_username
-MAIL_PASSWORD=your_mailtrap_password
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="noreply@example.com"
-MAIL_FROM_NAME="Poll Worker System"
+3. Run initial setup:
+```bash
+make setup
 ```
 
-#### Option 3: Mailgun
-```env
-MAIL_MAILER=mailgun
-MAILGUN_DOMAIN=your-domain.mailgun.org
-MAILGUN_SECRET=your-mailgun-api-key
-MAIL_FROM_ADDRESS="noreply@example.com"
-MAIL_FROM_NAME="Poll Worker System"
+This command:
+- Installs PHP dependencies via Composer
+- Installs Node.js dependencies
+- Generates application key
+- Runs database migrations
+- Seeds initial admin user
+- Builds frontend assets
+
+4. Start development environment:
+```bash
+make dev
 ```
 
-#### Option 4: Amazon SES
-```env
-MAIL_MAILER=ses
-AWS_ACCESS_KEY_ID=your_access_key
-AWS_SECRET_ACCESS_KEY=your_secret_key
-AWS_DEFAULT_REGION=us-east-1
-MAIL_FROM_ADDRESS="noreply@example.com"
-MAIL_FROM_NAME="Poll Worker System"
+This launches:
+- Laravel development server
+- Queue worker for email processing
+- Laravel Pail for real-time logs
+- Vite dev server with hot module reloading
+
+### Default Admin Credentials
+
+After running the seeder, you can log in with:
+- **Email**: admin@example.com
+- **Password**: password
+
+**Important**: Change these credentials immediately in production!
+
+## Development Workflow
+
+### Daily Development
+```bash
+ddev start    # Start DDEV containers
+make dev      # Launch development environment
 ```
 
-### Queue Configuration
+### Running Tests
+```bash
+ddev composer test
+# or
+ddev artisan test
+```
 
-The application uses database-driven queues to send emails asynchronously. This prevents blocking the user interface while emails are being sent.
+### Code Style
+```bash
+ddev exec ./vendor/bin/pint
+```
 
-#### Running the Queue Worker
+### Database Operations
+```bash
+ddev artisan migrate              # Run migrations
+ddev artisan migrate:fresh --seed # Fresh database with seeding
+ddev artisan db:seed              # Run seeders only
+```
 
-In development, the queue worker is automatically started when you run `make dev`.
+### Queue Management
+```bash
+ddev artisan queue:work           # Start queue worker
+ddev artisan queue:failed         # View failed jobs
+ddev artisan queue:retry all      # Retry failed jobs
+```
 
-For production, you should use a process manager like Supervisor to keep the queue worker running:
+## Testing Strategy
 
+The project includes comprehensive tests:
+
+### Feature Tests
+- Public registration flow (enabled and disabled states)
+- Email verification process
+- Admin authentication and authorization
+- Admin CRUD operations
+- Registration toggle functionality
+- CSV export
+
+### Property-Based Tests
+Three key properties are tested with multiple iterations:
+1. **Registration toggle updates database state**
+2. **Form state matches registration status**
+3. **Disabled registration rejects submissions**
+
+### Unit Tests
+- Model methods and relationships
+- Service layer business logic
+- Repository data access methods
+- Enum values and cases
+
+## Security Features
+
+- **Authentication**: Session-based with secure cookies
+- **Authorization**: Admin middleware protects sensitive routes
+- **CSRF Protection**: All forms include CSRF tokens
+- **Password Hashing**: Laravel's Hash facade with bcrypt
+- **Email Verification**: Time-limited, single-use tokens
+- **SQL Injection Prevention**: Eloquent ORM with parameter binding
+- **Input Validation**: Server-side validation on all inputs
+
+## Deployment Considerations
+
+### Environment Configuration
+Update `.env` for production:
+- Set `APP_ENV=production`
+- Configure mail driver (SMTP, Mailgun, SES, etc.)
+- Set `APP_URL` for correct verification links
+- Configure queue driver (Redis recommended for production)
+
+### Queue Worker
+Set up Supervisor to keep queue worker running:
 ```bash
 ddev artisan queue:work --tries=3 --timeout=90
 ```
 
-#### Queue Management Commands
+### Email Configuration
+- Configure SPF/DKIM records for your domain
+- Test email delivery in staging
+- Monitor failed jobs queue
 
-```bash
-# View failed jobs
-ddev artisan queue:failed
+### Database
+- Run migrations: `ddev artisan migrate --force`
+- Seed admin user: `ddev artisan db:seed --class=AdminUserSeeder`
 
-# Retry all failed jobs
-ddev artisan queue:retry all
+## Future Enhancements
 
-# Retry a specific failed job
-ddev artisan queue:retry {job-id}
+Potential features for future iterations:
+- Multi-factor authentication for admin users
+- Advanced reporting and analytics
+- SMS notifications in addition to email
+- Applicant portal for status checking
+- Automated residency validation via address APIs
+- Bulk import/export functionality
+- Audit log for all admin actions
 
-# Clear all failed jobs
-ddev artisan queue:flush
+## Contributing
 
-# Monitor queue in real-time
-ddev artisan queue:monitor
-```
+This project follows Laravel best practices and PSR-12 coding standards. When contributing:
 
-#### Production Queue Setup with Supervisor
+1. Run tests before submitting: `ddev composer test`
+2. Format code with Pint: `ddev exec ./vendor/bin/pint`
+3. Follow the patterns established in the codebase
+4. Add tests for new features
+5. Update documentation as needed
 
-Create a supervisor configuration file at `/etc/supervisor/conf.d/laravel-worker.conf`:
+## License
 
-```ini
-[program:laravel-worker]
-process_name=%(program_name)s_%(process_num)02d
-command=php /path/to/your/application/artisan queue:work --sleep=3 --tries=3 --max-time=3600
-autostart=true
-autorestart=true
-stopasgroup=true
-killasgroup=true
-user=www-data
-numprocs=1
-redirect_stderr=true
-stdout_logfile=/path/to/your/application/storage/logs/worker.log
-stopwaitsecs=3600
-```
+This project is open source under the MIT License.
 
-Then reload supervisor:
-```bash
-sudo supervisorctl reread
-sudo supervisorctl update
-sudo supervisorctl start laravel-worker:*
-```
+## Acknowledgments
 
-### Email Verification Flow
-
-1. User submits registration form
-2. Application creates application record and queues verification email
-3. Queue worker processes the job and sends email
-4. User clicks verification link in email
-5. Application verifies email and creates user account
-
-### Testing Email Configuration
-
-To test your email configuration:
-
-```bash
-ddev artisan tinker
-```
-
-Then in the Tinker console:
-```php
-Mail::raw('Test email', function ($message) {
-    $message->to('test@example.com')->subject('Test Email');
-});
-```
-
-Check your mail service dashboard or logs to confirm the email was sent successfully.
-
-## Contribution and License
-
-This project is open source under the MIT License. We welcome contributions and suggestions!
+Built with the [Kiro Laravel Skeleton Template](https://github.com/johnfmorton/kiro-laravel-skeleton), which provides a production-ready foundation for Laravel projects with DDEV, comprehensive steering documents, and best practices built-in.
