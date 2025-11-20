@@ -4,6 +4,8 @@
 
 The Poll Worker Sign-up System is a Laravel 12 application that manages the registration and administration of poll workers for Warren, CT. The system consists of two primary user interfaces: a public-facing registration form for applicants and an authenticated admin dashboard for managing applications. The architecture follows Laravel best practices with a service layer pattern, repository pattern for data access, and clear separation between public and admin functionality.
 
+The system includes an admin-controlled registration toggle that allows the voter registrar to enable or disable public registration. When disabled, the registration form is displayed but all fields and the submit button are disabled, with a message directing visitors to contact the registrar's office directly.
+
 ## Architecture
 
 ### High-Level Architecture
@@ -55,7 +57,10 @@ graph TB
 
 1. **Public Registration Flow**
    - Applicant visits public registration page
-   - Submits form with name, email, street address
+   - System checks if registration is enabled
+   - If enabled: Displays active form, accepts submissions
+   - If disabled: Displays disabled form with informational message
+   - When enabled, applicant submits form with name, email, street address
    - System validates and stores application
    - System sends verification email
    - Applicant clicks verification link
@@ -64,6 +69,7 @@ graph TB
 2. **Admin Management Flow**
    - Admin logs in via authentication page
    - Views dashboard overview with statistics on applications needing review
+   - Can toggle registration enabled/disabled status from dashboard
    - Navigates to application list (optionally filtered)
    - Filters/searches applications
    - Selects application to view details
@@ -75,6 +81,66 @@ graph TB
 ## Components and Interfaces
 
 ### Models
+
+#### Setting Model
+Stores system-wide configuration settings:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Setting extends Model
+{
+    protected $fillable = [
+        'key',
+        'value',
+    ];
+
+    /**
+     * Get a setting value by key.
+     *
+     * @param  string  $key
+     * @param  mixed  $default
+     * @return mixed
+     */
+    public static function get(string $key, mixed $default = null): mixed
+    {
+        $setting = static::where('key', $key)->first();
+        
+        return $setting ? $setting->value : $default;
+    }
+
+    /**
+     * Set a setting value by key.
+     *
+     * @param  string  $key
+     * @param  mixed  $value
+     * @return void
+     */
+    public static function set(string $key, mixed $value): void
+    {
+        static::updateOrCreate(
+            ['key' => $key],
+            ['value' => $value]
+        );
+    }
+
+    /**
+     * Check if registration is currently enabled.
+     *
+     * @return bool
+     */
+    public static function isRegistrationEnabled(): bool
+    {
+        return (bool) static::get('registration_enabled', true);
+    }
+}
+```
 
 #### Application Model
 Represents a poll worker application with the following attributes:
@@ -237,6 +303,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Services\ApplicationService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -250,11 +317,20 @@ class ApplicationController extends Controller
 
     public function create(): View
     {
-        return view('applications.create');
+        $registration_enabled = Setting::isRegistrationEnabled();
+        
+        return view('applications.create', compact('registration_enabled'));
     }
 
     public function store(Request $request): RedirectResponse
     {
+        // Check if registration is enabled
+        if (!Setting::isRegistrationEnabled()) {
+            return redirect()
+                ->route('applications.create')
+                ->with('error', 'Registration is currently disabled. Please contact the registrar\'s office.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:applications,email',
@@ -318,6 +394,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use App\Services\ApplicationService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -333,8 +410,22 @@ class ApplicationController extends Controller
     public function dashboard(): View
     {
         $stats = $this->applicationService->getDashboardStats();
+        $registration_enabled = Setting::isRegistrationEnabled();
 
-        return view('admin.dashboard', compact('stats'));
+        return view('admin.dashboard', compact('stats', 'registration_enabled'));
+    }
+
+    public function toggleRegistration(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'enabled' => 'required|boolean',
+        ]);
+
+        Setting::set('registration_enabled', $validated['enabled']);
+
+        $status = $validated['enabled'] ? 'enabled' : 'disabled';
+        
+        return back()->with('success', "Registration has been {$status}.");
     }
 
     public function index(Request $request): View
@@ -837,6 +928,10 @@ class VerificationEmail extends Mailable
 #### Admin Dashboard (admin.dashboard)
 The dashboard overview displays key statistics and quick navigation:
 
+- **Registration Toggle**: Prominent toggle control to enable/disable public registration
+  - Displays current status (enabled/disabled)
+  - Updates via AJAX or form submission
+  - Shows confirmation message after status change
 - **Statistics Cards**: Display counts for:
   - Total applications
   - Pending residency validation
@@ -844,6 +939,23 @@ The dashboard overview displays key statistics and quick navigation:
   - Approved residents without party assignment
 - **Quick Links**: Each statistic card links to a filtered view of the application list
 - **Navigation**: Links to full application list and other admin functions
+
+#### Public Registration Form (applications.create)
+The public registration form adapts based on registration status:
+
+- **When Registration is Enabled**:
+  - All form fields are active and editable
+  - Submit button is enabled
+  - Standard form validation applies
+  
+- **When Registration is Disabled**:
+  - All form fields are disabled (readonly)
+  - Submit button is disabled
+  - Informational message displayed:
+    - Thanks visitor for their interest
+    - Informs them registration is currently turned off
+    - Directs them to contact the registrar's office for questions about voter registration or upcoming elections
+  - Server-side validation prevents automated submissions
 
 #### Application List (admin.applications.index)
 The application list view includes:
@@ -873,6 +985,19 @@ The exported CSV file includes the following columns:
 ## Data Models
 
 ### Database Schema
+
+#### settings table
+```sql
+CREATE TABLE settings (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    key VARCHAR(255) NOT NULL UNIQUE,
+    value TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_key (key)
+);
+```
 
 #### applications table
 ```sql
@@ -960,7 +1085,34 @@ erDiagram
         timestamp created_at
         timestamp updated_at
     }
+    
+    SETTINGS {
+        bigint id PK
+        string key UK
+        text value
+        timestamp created_at
+        timestamp updated_at
+    }
 ```
+
+## Correctness Properties
+
+*A property is a characteristic or behavior that should hold true across all valid executions of a system-essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+
+### Property 1: Registration toggle updates database state
+
+*For any* admin user action to toggle registration status, the database SHALL reflect the new enabled/disabled state after the toggle action completes
+**Validates: Requirements 12.2, 12.3, 12.4**
+
+### Property 2: Form state matches registration status
+
+*For any* visitor accessing the registration page, the form fields and submit button SHALL be enabled if and only if registration is enabled in the database
+**Validates: Requirements 13.1, 13.2**
+
+### Property 3: Disabled registration rejects submissions
+
+*For any* form submission attempt when registration is disabled, the system SHALL reject the submission and return an error response
+**Validates: Requirements 13.5**
 
 ## Error Handling
 
@@ -991,9 +1143,12 @@ erDiagram
 
 ### Feature Tests
 - Public registration flow
-  - Submit valid application
+  - Submit valid application when registration is enabled
   - Submit duplicate email
   - Submit invalid data
+  - Attempt submission when registration is disabled
+  - View form when registration is enabled
+  - View form when registration is disabled
 - Email verification flow
   - Verify with valid token
   - Verify with expired token
@@ -1005,6 +1160,9 @@ erDiagram
 - Admin dashboard
   - View dashboard statistics
   - Navigate to filtered application lists from dashboard
+  - View registration toggle control
+  - Toggle registration from enabled to disabled
+  - Toggle registration from disabled to enabled
 - Admin CRUD operations
   - View application list
   - Filter and search applications
@@ -1015,6 +1173,31 @@ erDiagram
   - Assign party affiliation
   - Resend verification email
   - Export applications to CSV
+
+### Property-Based Tests
+The following properties will be tested using PHPUnit with a property-based testing approach:
+
+- **Property 1: Registration toggle updates database state** (Feature: poll-worker-signup, Property 1)
+  - Generate random initial registration states
+  - Toggle to opposite state
+  - Verify database reflects new state
+  - Run 100+ iterations
+  - **Validates: Requirements 12.2, 12.3, 12.4**
+
+- **Property 2: Form state matches registration status** (Feature: poll-worker-signup, Property 2)
+  - Generate random registration states
+  - Load registration page
+  - Verify form field disabled state matches registration state
+  - Run 100+ iterations
+  - **Validates: Requirements 13.1, 13.2**
+
+- **Property 3: Disabled registration rejects submissions** (Feature: poll-worker-signup, Property 3)
+  - Generate random valid form data
+  - Set registration to disabled
+  - Attempt form submission
+  - Verify submission is rejected with error
+  - Run 100+ iterations
+  - **Validates: Requirements 13.5**
 
 ### Integration Tests
 - Complete registration to verification flow

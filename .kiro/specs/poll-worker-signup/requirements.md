@@ -148,3 +148,27 @@ This system enables prospective poll workers in Warren, CT to sign up for servic
 3. THE Poll Worker System SHALL include all relevant fields in the CSV export including name, email, street address, email verification status, residency status, and party affiliation
 4. THE Poll Worker System SHALL include timestamps for email verification, residency validation, and party assignment in the CSV export
 5. WHEN the CSV file is generated, THE Poll Worker System SHALL initiate a file download to the admin user's browser
+
+### Requirement 12
+
+**User Story:** As an admin user, I want to enable or disable poll worker registration, so that I can control when the public can submit applications
+
+#### Acceptance Criteria
+
+1. WHEN an admin user views the admin dashboard, THE Poll Worker System SHALL display a toggle control for enabling or disabling registration
+2. WHEN an admin user activates the toggle to disable registration, THE Poll Worker System SHALL update the registration status to disabled
+3. WHEN an admin user activates the toggle to enable registration, THE Poll Worker System SHALL update the registration status to enabled
+4. THE Poll Worker System SHALL persist the registration enabled/disabled state in the database
+5. WHEN the registration status changes, THE Poll Worker System SHALL display a confirmation message to the admin user
+
+### Requirement 13
+
+**User Story:** As a visitor, I want to see the registration form status, so that I understand whether I can currently apply to be a poll worker
+
+#### Acceptance Criteria
+
+1. WHEN a visitor accesses the registration page and registration is enabled, THE Poll Worker System SHALL display an active form with enabled input fields and submit button
+2. WHEN a visitor accesses the registration page and registration is disabled, THE Poll Worker System SHALL display the form with all input fields and submit button disabled
+3. WHEN registration is disabled, THE Poll Worker System SHALL display a message thanking the visitor for their interest and informing them that sign-up is currently turned off
+4. WHEN registration is disabled, THE Poll Worker System SHALL display contact information directing visitors to contact the registrar's office for questions about voter registration or upcoming elections
+5. WHEN registration is disabled and a visitor attempts form submission through automated means, THE Poll Worker System SHALL reject the submission and return an error

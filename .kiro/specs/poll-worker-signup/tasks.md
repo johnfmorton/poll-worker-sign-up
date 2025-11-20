@@ -161,3 +161,53 @@
   - Add export button to application list view
   - Set appropriate CSV headers for file download
   - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5_
+
+- [x] 23. Create settings table and model for registration toggle
+  - Create migration for settings table with key and value columns
+  - Create Setting model with get, set, and isRegistrationEnabled static methods
+  - Add unique index on key column
+  - Seed initial registration_enabled setting with value true
+  - _Requirements: 12.4_
+
+- [ ] 24. Implement admin registration toggle functionality
+  - Add toggleRegistration method to Admin\ApplicationController
+  - Validate enabled boolean input
+  - Update Setting model with new registration status
+  - Return to dashboard with confirmation message
+  - Update dashboard method to pass registration_enabled status to view
+  - Add registration toggle control to admin dashboard view
+  - Style toggle with clear enabled/disabled visual states
+  - _Requirements: 12.1, 12.2, 12.3, 12.5_
+
+- [ ]* 24.1 Write property test for registration toggle
+  - **Property 1: Registration toggle updates database state**
+  - **Validates: Requirements 12.2, 12.3, 12.4**
+
+- [ ] 25. Update public registration form to respect toggle status
+  - Update ApplicationController create method to pass registration_enabled to view
+  - Update ApplicationController store method to check registration status before processing
+  - Return error message if registration is disabled during submission attempt
+  - Modify registration form view to disable all fields and submit button when registration is disabled
+  - Add informational message when registration is disabled thanking visitor and directing to registrar's office
+  - Add server-side validation to prevent automated submissions when disabled
+  - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
+
+- [ ]* 25.1 Write property test for form state matching registration status
+  - **Property 2: Form state matches registration status**
+  - **Validates: Requirements 13.1, 13.2**
+
+- [ ]* 25.2 Write property test for disabled registration rejecting submissions
+  - **Property 3: Disabled registration rejects submissions**
+  - **Validates: Requirements 13.5**
+
+- [ ]* 25.3 Write feature tests for registration toggle
+  - Test viewing form when registration is enabled
+  - Test viewing form when registration is disabled
+  - Test submitting form when registration is disabled returns error
+  - Test admin can toggle registration from enabled to disabled
+  - Test admin can toggle registration from disabled to enabled
+  - Test dashboard displays current registration status
+  - _Requirements: 12.1, 12.2, 12.3, 12.5, 13.1, 13.2, 13.3, 13.4, 13.5_
+
+- [ ] 26. Final checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
