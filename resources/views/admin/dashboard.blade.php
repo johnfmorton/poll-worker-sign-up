@@ -5,6 +5,73 @@
       <p class="mt-2 text-sm text-gray-600">Overview of poll worker applications requiring review</p>
     </div>
 
+    <!-- Registration Toggle Control -->
+    <div class="bg-white shadow rounded-lg mb-8">
+      <div class="px-4 py-5 sm:p-6">
+        <div class="sm:flex sm:items-start sm:justify-between">
+          <div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+              Public Registration
+            </h3>
+            <div class="mt-2 max-w-xl text-sm text-gray-500">
+              <p>Control whether the public can submit new poll worker applications.</p>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-0 sm:ml-6 sm:flex-shrink-0 sm:flex sm:items-center">
+            <form method="POST" action="{{ route('admin.toggleRegistration') }}" class="inline-block">
+              @csrf
+              <input type="hidden" name="enabled" value="{{ $registration_enabled ? '0' : '1' }}">
+              <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white {{ $registration_enabled ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500' }} focus:outline-none focus:ring-2 focus:ring-offset-2">
+                @if($registration_enabled)
+                  <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Disable Registration
+                @else
+                  <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Enable Registration
+                @endif
+              </button>
+            </form>
+            <div class="ml-4 flex items-center">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $registration_enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                @if($registration_enabled)
+                  <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
+                    <circle cx="4" cy="4" r="3" />
+                  </svg>
+                  Enabled
+                @else
+                  <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
+                    <circle cx="4" cy="4" r="3" />
+                  </svg>
+                  Disabled
+                @endif
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if(session('success'))
+      <div class="rounded-md bg-green-50 p-4 mb-8">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm font-medium text-green-800">
+              {{ session('success') }}
+            </p>
+          </div>
+        </div>
+      </div>
+    @endif
+
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
       <!-- Total Applications -->

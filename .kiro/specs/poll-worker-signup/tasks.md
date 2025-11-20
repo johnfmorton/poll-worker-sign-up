@@ -169,7 +169,7 @@
   - Seed initial registration_enabled setting with value true
   - _Requirements: 12.4_
 
-- [ ] 24. Implement admin registration toggle functionality
+- [x] 24. Implement admin registration toggle functionality
   - Add toggleRegistration method to Admin\ApplicationController
   - Validate enabled boolean input
   - Update Setting model with new registration status
@@ -183,7 +183,7 @@
   - **Property 1: Registration toggle updates database state**
   - **Validates: Requirements 12.2, 12.3, 12.4**
 
-- [ ] 25. Update public registration form to respect toggle status
+- [x] 25. Update public registration form to respect toggle status
   - Update ApplicationController create method to pass registration_enabled to view
   - Update ApplicationController store method to check registration status before processing
   - Return error message if registration is disabled during submission attempt
@@ -209,5 +209,5 @@
   - Test dashboard displays current registration status
   - _Requirements: 12.1, 12.2, 12.3, 12.5, 13.1, 13.2, 13.3, 13.4, 13.5_
 
-- [ ] 26. Final checkpoint - Ensure all tests pass
+- [x] 26. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.

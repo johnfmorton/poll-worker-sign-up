@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use App\Services\ApplicationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,8 +24,25 @@ class ApplicationController extends Controller
     public function dashboard(): View
     {
         $stats = $this->application_service->getDashboardStats();
+        $registration_enabled = Setting::isRegistrationEnabled();
 
-        return view('admin.dashboard', compact('stats'));
+        return view('admin.dashboard', compact('stats', 'registration_enabled'));
+    }
+
+    /**
+     * Toggle the registration enabled/disabled status.
+     */
+    public function toggleRegistration(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'enabled' => 'required|boolean',
+        ]);
+
+        Setting::set('registration_enabled', $validated['enabled']);
+
+        $status = $validated['enabled'] ? 'enabled' : 'disabled';
+
+        return back()->with('success', "Registration has been {$status}.");
     }
 
     /**

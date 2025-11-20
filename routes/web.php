@@ -27,6 +27,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Admin routes (protected by admin middleware)
 Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminApplicationController::class, 'dashboard'])->name('dashboard');
+    Route::post('/toggle-registration', [AdminApplicationController::class, 'toggleRegistration'])->name('toggleRegistration');
     Route::get('/applications', [AdminApplicationController::class, 'index'])->name('applications.index');
     Route::get('/applications/export', [AdminApplicationController::class, 'export'])->name('applications.export');
     Route::get('/applications/{id}', [AdminApplicationController::class, 'show'])->name('applications.show');

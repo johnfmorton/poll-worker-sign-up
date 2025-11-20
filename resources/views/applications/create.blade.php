@@ -14,6 +14,32 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="mb-8 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg shadow-sm" role="alert">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="font-medium">{{ session('error') }}</span>
+                    </div>
+                </div>
+            @endif
+
+            @if(!$registration_enabled)
+                <div class="mb-8 bg-blue-50 border border-blue-200 text-blue-900 px-6 py-5 rounded-lg shadow-sm">
+                    <div class="flex items-start">
+                        <svg class="w-6 h-6 text-blue-600 mr-3 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div>
+                            <h3 class="font-semibold text-lg mb-2">Registration Currently Unavailable</h3>
+                            <p class="mb-3">Thank you for your interest in serving as a poll worker! Poll worker sign-up is currently turned off.</p>
+                            <p class="text-sm">For questions about voter registration or upcoming elections, please contact the Warren Registrar's Office.</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Two-Column Card -->
             <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg border-t-4 border-blue-600">
                 <div class="grid lg:grid-cols-5 gap-0">
@@ -101,7 +127,8 @@
                                     name="name" 
                                     id="name" 
                                     value="{{ old('name') }}"
-                                    class="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 {{ $errors->has('name') ? 'border-red-500' : '' }}"
+                                    class="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 {{ $errors->has('name') ? 'border-red-500' : '' }} {{ !$registration_enabled ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                                    {{ !$registration_enabled ? 'disabled' : '' }}
                                     required
                                 >
                                 @if($errors->has('name'))
@@ -119,7 +146,8 @@
                                     name="email" 
                                     id="email" 
                                     value="{{ old('email') }}"
-                                    class="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 {{ $errors->has('email') ? 'border-red-500' : '' }}"
+                                    class="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 {{ $errors->has('email') ? 'border-red-500' : '' }} {{ !$registration_enabled ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                                    {{ !$registration_enabled ? 'disabled' : '' }}
                                     required
                                 >
                                 <p class="mt-2 text-sm text-gray-600">
@@ -140,8 +168,9 @@
                                     name="street_address" 
                                     id="street_address" 
                                     value="{{ old('street_address') }}"
-                                    class="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 {{ $errors->has('street_address') ? 'border-red-500' : '' }}"
+                                    class="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 {{ $errors->has('street_address') ? 'border-red-500' : '' }} {{ !$registration_enabled ? 'bg-gray-100 cursor-not-allowed' : '' }}"
                                     placeholder="123 Main Street, Warren, CT"
+                                    {{ !$registration_enabled ? 'disabled' : '' }}
                                     required
                                 >
                                 @if($errors->has('street_address'))
@@ -153,7 +182,8 @@
                             <div class="pt-6 space-y-4">
                                 <button 
                                     type="submit" 
-                                    class="w-full px-6 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
+                                    class="w-full px-6 py-4 text-lg font-semibold rounded-lg transition-colors shadow-sm {{ $registration_enabled ? 'bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }}"
+                                    {{ !$registration_enabled ? 'disabled' : '' }}
                                 >
                                     Submit Your Information
                                 </button>

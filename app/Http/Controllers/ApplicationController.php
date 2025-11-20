@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Services\ApplicationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,9 @@ class ApplicationController extends Controller
      */
     public function create(): View
     {
-        return view('applications.create');
+        $registration_enabled = Setting::isRegistrationEnabled();
+
+        return view('applications.create', compact('registration_enabled'));
     }
 
     /**
@@ -28,6 +31,13 @@ class ApplicationController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Check if registration is enabled
+        if (!Setting::isRegistrationEnabled()) {
+            return redirect()
+                ->route('applications.create')
+                ->with('error', 'Registration is currently disabled. Please contact the registrar\'s office.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:applications,email',
