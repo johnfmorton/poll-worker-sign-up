@@ -1,8 +1,8 @@
 # About the Poll Worker Signup System
 
-## Project Overview
+## Overview
 
-The Poll Worker Signup System is a Laravel 12 application designed to manage the registration and administration of poll workers for Warren, CT. This project was built using the [Kiro Laravel Skeleton Template](https://github.com/johnfmorton/kiro-laravel-skeleton), which provides a production-ready foundation with DDEV local development, Vite integration, and comprehensive steering documents.
+The **Poll Worker Signup System** is a Laravel 12 web app designed to manage the registration and administration of poll workers for Warren, CT. This project was built using the [**Kiro Laravel Skeleton Template**](https://github.com/johnfmorton/kiro-laravel-skeleton), which provides a production-ready foundation with DDEV local development, Vite integration, and comprehensive steering documents.
 
 ## What This Application Does
 
@@ -13,6 +13,8 @@ This system serves two primary audiences:
 - Receive email verification to confirm identity
 - Automatic account creation upon email verification
 
+![Public Interface Screenshot](documentation/poll-worker-signup-screenshot.jpg)
+
 ### For Voter Registrar Staff (Admin Interface)
 - View dashboard with application statistics and quick filters
 - Toggle public registration on/off as needed
@@ -22,6 +24,8 @@ This system serves two primary audiences:
 - Edit or delete applications
 - Resend verification emails
 - Export all applications to CSV for external analysis
+
+![Admin Interface Screenshot](documentation/poll-worker-admin-screenshot.jpg)
 
 ## Key Features
 
