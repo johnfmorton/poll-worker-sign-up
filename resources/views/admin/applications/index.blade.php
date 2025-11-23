@@ -43,7 +43,7 @@
                                 id="search" 
                                 value="{{ $filters['search'] ?? '' }}"
                                 placeholder="Search applications..."
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                             >
                         </div>
 
@@ -56,7 +56,7 @@
                                 <select 
                                     name="email_verified" 
                                     id="email_verified"
-                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                                 >
                                     <option value="">All</option>
                                     <option value="yes" {{ ($filters['email_verified'] ?? '') === 'yes' ? 'selected' : '' }}>
@@ -76,7 +76,7 @@
                                 <select 
                                     name="residency_status" 
                                     id="residency_status"
-                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                                 >
                                     <option value="">All</option>
                                     <option value="pending" {{ ($filters['residency_status'] ?? '') === 'pending' ? 'selected' : '' }}>
@@ -99,7 +99,7 @@
                                 <select 
                                     name="party_affiliation" 
                                     id="party_affiliation"
-                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                                 >
                                     <option value="">All</option>
                                     <option value="democrat" {{ ($filters['party_affiliation'] ?? '') === 'democrat' ? 'selected' : '' }}>

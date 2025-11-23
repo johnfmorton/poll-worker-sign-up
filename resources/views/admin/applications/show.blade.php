@@ -165,7 +165,7 @@
                             <select 
                                 name="party_affiliation" 
                                 id="party_affiliation"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                                 required
                             >
                                 <option value="">-- Select Party --</option>
