@@ -18,7 +18,7 @@
                     <div class="flex justify-between h-16">
                         <div class="flex items-center">
                             <h1 class="text-xl font-bold text-gray-900">
-                                Poll Worker Admin
+                                <a href="/" class="hover:text-blue-700 hover:underline" target="_blank">Poll Worker Sign Up</a>
                             </h1>
                         </div>
                         
