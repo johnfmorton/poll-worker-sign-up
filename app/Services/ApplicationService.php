@@ -45,6 +45,41 @@ class ApplicationService
     }
 
     /**
+     * Create a new application or resend verification if email already exists unverified.
+     *
+     * @param  array{name: string, email: string, street_address: string}  $data
+     * @return array{application: Application, resent: bool}
+     */
+    public function createOrResendApplication(array $data): array
+    {
+        // Check if email already exists
+        $existing_application = Application::where('email', $data['email'])->first();
+
+        if ($existing_application) {
+            // If already verified, this is a duplicate (shouldn't happen with validation)
+            if ($existing_application->email_verified_at) {
+                throw new \InvalidArgumentException('Email already registered and verified.');
+            }
+
+            // Email exists but not verified - resend verification
+            $this->resendVerificationEmail($existing_application->id);
+
+            return [
+                'application' => $existing_application->fresh(),
+                'resent' => true,
+            ];
+        }
+
+        // New application - create it
+        $application = $this->createApplication($data);
+
+        return [
+            'application' => $application,
+            'resent' => false,
+        ];
+    }
+
+    /**
      * Verify email using token and create user account.
      *
      * @return array{success: bool, already_verified?: bool, email?: string}
@@ -97,19 +132,8 @@ class ApplicationService
             return ['success' => $success];
         }
 
-        // Token not found - could be invalid or already used
-        // Check if there's any verified application (link was already used)
-        $any_verified = Application::whereNotNull('email_verified_at')->exists();
-
-        if ($any_verified) {
-            return [
-                'success' => false,
-                'already_verified' => true,
-                'email' => null,
-            ];
-        }
-
-        // Token is completely invalid
+        // Token not found - invalid or already used
+        // Don't reveal any information about the system
         return ['success' => false];
     }
 

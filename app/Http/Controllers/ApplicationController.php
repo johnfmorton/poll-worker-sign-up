@@ -32,7 +32,7 @@ class ApplicationController extends Controller
     public function store(Request $request): RedirectResponse
     {
         // Check if registration is enabled
-        if (!Setting::isRegistrationEnabled()) {
+        if (! Setting::isRegistrationEnabled()) {
             return redirect()
                 ->route('applications.create')
                 ->with('error', 'Registration is currently disabled. Please contact the registrar\'s office.');
@@ -40,11 +40,17 @@ class ApplicationController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:applications,email',
+            'email' => 'required|email',
             'street_address' => 'required|string|max:500',
         ]);
 
-        $this->applicationService->createApplication($validated);
+        $result = $this->applicationService->createOrResendApplication($validated);
+
+        if ($result['resent']) {
+            return redirect()
+                ->route('applications.create')
+                ->with('info', 'This email was already registered but not yet verified. We have resent the verification email. Please check your inbox and click the link to complete your registration. If the problem continues, contact registrars@warrenct.gov.');
+        }
 
         return redirect()
             ->route('applications.create')

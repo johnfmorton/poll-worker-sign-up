@@ -25,10 +25,20 @@ class VerificationController extends Controller
             return view('verification.success');
         }
 
-        return view('verification.expired', [
-            'already_verified' => $result['already_verified'] ?? false,
-            'email' => $result['email'] ?? null,
-        ]);
+        // If already verified, show success message
+        if ($result['already_verified'] ?? false) {
+            return view('verification.already-verified');
+        }
+
+        // If expired with email, show expired page with resend option
+        if (isset($result['email'])) {
+            return view('verification.expired', [
+                'email' => $result['email'],
+            ]);
+        }
+
+        // Invalid token - show 404-style error
+        return view('verification.invalid');
     }
 
     /**

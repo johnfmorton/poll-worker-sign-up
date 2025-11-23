@@ -36,7 +36,7 @@
             @endisset
             
             <!-- Page Content -->
-            <main class="flex-grow bg-gradient-to-b from-blue-700 via-red-500 to-slate-50">
+            <main class="flex-grow bg-gradient-to-b from-blue-700 via-red-500 to-slate-50 pb-12">
                 {{ $slot }}
             </main>
 

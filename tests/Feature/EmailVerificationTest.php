@@ -73,7 +73,7 @@ class EmailVerificationTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Verification Link Expired');
-        $response->assertSee('This verification link has expired or is invalid');
+        $response->assertSee('This verification link has expired');
         $response->assertSee('Send New Verification Email');
 
         // Verify the application was NOT updated
@@ -99,8 +99,9 @@ class EmailVerificationTest extends TestCase
         $response = $this->get("/verify/{$invalid_token}");
 
         $response->assertStatus(200);
-        $response->assertSee('Verification Link Expired');
-        $response->assertSee('This verification link has expired or is invalid');
+        $response->assertSee('Invalid Verification Link');
+        $response->assertSee('This verification link is not valid');
+        $response->assertSee('Start New Registration');
     }
 
     /**
@@ -146,6 +147,7 @@ class EmailVerificationTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Verification Link Expired');
         $response->assertSee('Verification links are valid for 48 hours');
+        $response->assertSee('Send New Verification Email');
         $response->assertSee('Return to Home');
     }
 
@@ -166,7 +168,7 @@ class EmailVerificationTest extends TestCase
         ]);
 
         // Resend verification email
-        $response = $this->post("/verification/resend/jane@example.com");
+        $response = $this->post('/verification/resend/jane@example.com');
 
         $response->assertRedirect(route('verification.expired'));
         $response->assertSessionHas('success', 'A new verification email has been sent to your email address.');
@@ -195,6 +197,11 @@ class EmailVerificationTest extends TestCase
 
         // Verify the application
         $this->get("/verify/{$token}");
+
+        // Manually set the token back to test the already verified scenario
+        $application->refresh();
+        $application->verification_token = $token;
+        $application->save();
 
         // Try to visit with the same token again (simulate already used link)
         $response = $this->get("/verify/{$token}");
