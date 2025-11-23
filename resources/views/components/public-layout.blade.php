@@ -17,7 +17,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center">
                 <h1 class="text-4xl font-bold mb-3">
-                    Become a Poll Worker
+                    <span class="mx-2">🇺🇸</span> Become a Poll Worker <span class="mx-2">🇺🇸</span>
                 </h1>
                 <p class="text-blue-100 text-lg max-w-2xl mx-auto">
                     Town of Warren, Connecticut · Voter Registration Office
@@ -36,7 +36,7 @@
             @endisset
             
             <!-- Page Content -->
-            <main class="flex-grow">
+            <main class="flex-grow bg-gradient-to-b from-blue-700 via-red-500 to-slate-50">
                 {{ $slot }}
             </main>
 
