@@ -16,6 +16,7 @@ Route::post('/', [ApplicationController::class, 'store'])->name('applications.st
 
 // Email verification routes
 Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verification.verify');
+Route::post('/verification/resend/{email}', [VerificationController::class, 'resend'])->name('verification.resend');
 Route::view('/verification/success', 'verification.success')->name('verification.success');
 Route::view('/verification/expired', 'verification.expired')->name('verification.expired');
 

@@ -21,10 +21,25 @@ class VerificationController extends Controller
     {
         $result = $this->application_service->verifyEmail($token);
 
-        if ($result) {
+        if ($result['success']) {
             return view('verification.success');
         }
 
-        return view('verification.expired');
+        return view('verification.expired', [
+            'already_verified' => $result['already_verified'] ?? false,
+            'email' => $result['email'] ?? null,
+        ]);
+    }
+
+    /**
+     * Resend verification email from expired page.
+     */
+    public function resend(string $email): RedirectResponse
+    {
+        $this->application_service->resendVerificationEmailByEmail($email);
+
+        return redirect()
+            ->route('verification.expired')
+            ->with('success', 'A new verification email has been sent to your email address.');
     }
 }

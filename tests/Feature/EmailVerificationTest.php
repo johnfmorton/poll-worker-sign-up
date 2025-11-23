@@ -74,6 +74,7 @@ class EmailVerificationTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Verification Link Expired');
         $response->assertSee('This verification link has expired or is invalid');
+        $response->assertSee('Send New Verification Email');
 
         // Verify the application was NOT updated
         $application->refresh();
@@ -145,7 +146,62 @@ class EmailVerificationTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Verification Link Expired');
         $response->assertSee('Verification links are valid for 48 hours');
-        $response->assertSee('Register Again');
         $response->assertSee('Return to Home');
+    }
+
+    /**
+     * Test user can resend verification email from expired page.
+     */
+    public function test_user_can_resend_verification_email_from_expired_page(): void
+    {
+        // Create an application with an expired verification token
+        $token = Str::random(64);
+        $application = Application::create([
+            'name' => 'Jane Smith',
+            'email' => 'jane@example.com',
+            'street_address' => '456 Oak Ave',
+            'verification_token' => $token,
+            'verification_token_expires_at' => Carbon::now()->subHours(1),
+            'residency_status' => 'pending',
+        ]);
+
+        // Resend verification email
+        $response = $this->post("/verification/resend/jane@example.com");
+
+        $response->assertRedirect(route('verification.expired'));
+        $response->assertSessionHas('success', 'A new verification email has been sent to your email address.');
+
+        // Verify the application has a new token
+        $application->refresh();
+        $this->assertNotEquals($token, $application->verification_token);
+        $this->assertGreaterThan(Carbon::now(), $application->verification_token_expires_at);
+    }
+
+    /**
+     * Test already verified link shows appropriate message.
+     */
+    public function test_already_verified_link_shows_appropriate_message(): void
+    {
+        // Create and verify an application first
+        $token = Str::random(64);
+        $application = Application::create([
+            'name' => 'John Verified',
+            'email' => 'verified@example.com',
+            'street_address' => '789 Verified St',
+            'verification_token' => $token,
+            'verification_token_expires_at' => Carbon::now()->addHours(48),
+            'residency_status' => 'pending',
+        ]);
+
+        // Verify the application
+        $this->get("/verify/{$token}");
+
+        // Try to visit with the same token again (simulate already used link)
+        $response = $this->get("/verify/{$token}");
+
+        $response->assertStatus(200);
+        $response->assertSee('Already Verified');
+        $response->assertSee('Your account has already been verified');
+        $response->assertSee('Thank you for signing up');
     }
 }

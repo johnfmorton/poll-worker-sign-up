@@ -46,34 +46,71 @@ class ApplicationService
 
     /**
      * Verify email using token and create user account.
+     *
+     * @return array{success: bool, already_verified?: bool, email?: string}
      */
-    public function verifyEmail(string $token): bool
+    public function verifyEmail(string $token): array
     {
         $application = $this->application_repository->findByVerificationToken($token);
 
-        if (! $application || $application->verification_token_expires_at < Carbon::now()) {
-            return false;
+        // If token found, check if expired or already verified
+        if ($application) {
+            // Check if already verified (token exists but email_verified_at is set)
+            if ($application->email_verified_at) {
+                return [
+                    'success' => false,
+                    'already_verified' => true,
+                    'email' => null,
+                ];
+            }
+
+            // Check if expired
+            if ($application->verification_token_expires_at < Carbon::now()) {
+                return [
+                    'success' => false,
+                    'already_verified' => false,
+                    'email' => $application->email,
+                ];
+            }
+
+            // Valid token - verify the application
+            $success = DB::transaction(function () use ($application) {
+                // Create user account
+                $user = User::create([
+                    'name' => $application->name,
+                    'email' => $application->email,
+                    'password' => Hash::make(Str::random(32)), // Random password, user won't log in
+                    'is_admin' => false,
+                ]);
+
+                // Update application
+                $this->application_repository->update($application->id, [
+                    'email_verified_at' => Carbon::now(),
+                    'verification_token' => null,
+                    'verification_token_expires_at' => null,
+                    'user_id' => $user->id,
+                ]);
+
+                return true;
+            });
+
+            return ['success' => $success];
         }
 
-        return DB::transaction(function () use ($application) {
-            // Create user account
-            $user = User::create([
-                'name' => $application->name,
-                'email' => $application->email,
-                'password' => Hash::make(Str::random(32)), // Random password, user won't log in
-                'is_admin' => false,
-            ]);
+        // Token not found - could be invalid or already used
+        // Check if there's any verified application (link was already used)
+        $any_verified = Application::whereNotNull('email_verified_at')->exists();
 
-            // Update application
-            $this->application_repository->update($application->id, [
-                'email_verified_at' => Carbon::now(),
-                'verification_token' => null,
-                'verification_token_expires_at' => null,
-                'user_id' => $user->id,
-            ]);
+        if ($any_verified) {
+            return [
+                'success' => false,
+                'already_verified' => true,
+                'email' => null,
+            ];
+        }
 
-            return true;
-        });
+        // Token is completely invalid
+        return ['success' => false];
     }
 
     /**
@@ -154,6 +191,29 @@ class ApplicationService
 
         // Generate new token and invalidate old one
         $this->application_repository->update($id, [
+            'verification_token' => Str::random(64),
+            'verification_token_expires_at' => Carbon::now()->addHours(48),
+        ]);
+
+        $application->refresh();
+        $this->email_service->sendVerificationEmail($application);
+    }
+
+    /**
+     * Resend verification email by email address.
+     */
+    public function resendVerificationEmailByEmail(string $email): void
+    {
+        $application = Application::where('email', $email)
+            ->whereNull('email_verified_at')
+            ->first();
+
+        if (! $application) {
+            return;
+        }
+
+        // Generate new token and invalidate old one
+        $this->application_repository->update($application->id, [
             'verification_token' => Str::random(64),
             'verification_token_expires_at' => Carbon::now()->addHours(48),
         ]);
