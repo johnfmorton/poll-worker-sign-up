@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Database backup scripts - exclude configuration with credentials
+/backup_scripts/.env.sh
