@@ -198,3 +198,48 @@ exit_with_success() {
     
     exit 0
 }
+
+# Clean up old backup files based on retention count
+# Usage: cleanup_old_backups
+cleanup_old_backups() {
+    local retention_count="${BACKUP_RETENTION_COUNT:-0}"
+    
+    # Skip cleanup if retention count is 0 or not set
+    if [[ "${retention_count}" -eq 0 ]]; then
+        log_message "Backup retention disabled (BACKUP_RETENTION_COUNT=0), skipping cleanup"
+        return 0
+    fi
+    
+    # Validate retention count is a positive integer
+    if ! [[ "${retention_count}" =~ ^[0-9]+$ ]] || [[ "${retention_count}" -lt 1 ]]; then
+        log_message "WARNING: Invalid BACKUP_RETENTION_COUNT value '${retention_count}', skipping cleanup"
+        return 0
+    fi
+    
+    # Count existing backup files
+    local backup_count
+    backup_count=$(find "${BACKUP_DIR}" -name "backup_*.sql.gz" -type f 2>/dev/null | wc -l | tr -d ' ')
+    
+    if [[ "${backup_count}" -le "${retention_count}" ]]; then
+        log_message "Current backup count (${backup_count}) is within retention limit (${retention_count}), no cleanup needed"
+        return 0
+    fi
+    
+    # Calculate how many files to delete
+    local files_to_delete=$((backup_count - retention_count))
+    
+    log_message "Found ${backup_count} backups, retention limit is ${retention_count}, removing ${files_to_delete} old backup(s)"
+    
+    # Find and delete oldest backup files
+    # Sort by filename (which includes timestamp) and delete the oldest ones
+    # Using portable approach that works on both GNU and BSD (macOS) systems
+    find "${BACKUP_DIR}" -name "backup_*.sql.gz" -type f 2>/dev/null | \
+        sort | \
+        head -n "${files_to_delete}" | \
+        while IFS= read -r file; do
+            log_message "Deleting old backup: $(basename "${file}")"
+            rm -f "${file}"
+        done
+    
+    log_message "Cleanup complete, ${retention_count} backup(s) retained"
+}

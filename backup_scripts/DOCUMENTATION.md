@@ -148,7 +148,24 @@ BACKUP_DIR="/var/www/html/backup_scripts/backups"
 
 # Or relative to script location
 BACKUP_DIR="./backups"
+
+# Number of backup files to retain (automatic cleanup)
+BACKUP_RETENTION_COUNT="7"      # Keep last 7 backups, delete older ones
+# Set to "0" to disable automatic cleanup and keep all backups
 ```
+
+**Backup Retention Policy:**
+
+The `BACKUP_RETENTION_COUNT` setting controls automatic cleanup of old backup files:
+
+- **Positive number (e.g., 7, 30)**: Keep only the most recent N backups. After each backup, older files are automatically deleted.
+- **0**: Disable automatic cleanup. All backups are retained indefinitely (manual cleanup required).
+- **Default**: 7 backups
+
+Example scenarios:
+- `BACKUP_RETENTION_COUNT="7"` - Keep last 7 backups (good for daily backups = 1 week)
+- `BACKUP_RETENTION_COUNT="30"` - Keep last 30 backups (good for daily backups = 1 month)
+- `BACKUP_RETENTION_COUNT="0"` - Keep all backups forever (requires manual cleanup)
 
 ### S3 Configuration
 

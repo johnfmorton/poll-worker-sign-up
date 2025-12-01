@@ -87,6 +87,10 @@ CONFIGURATION
     BACKUP_DIR
       Local directory path for storing backup files
 
+    BACKUP_RETENTION_COUNT
+      Number of backup files to retain (default: 7)
+      Set to 0 to disable automatic cleanup and keep all backups
+
   S3 Configuration (required for sync_backups_to_s3.sh):
 
     REMOTE_S3_BUCKET

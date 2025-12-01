@@ -53,6 +53,12 @@ LOCAL_DB_SCHEMA=""
 # Example: "/var/backups/mysql" or "${HOME}/backups/database"
 BACKUP_DIR=""
 
+# Number of backup files to retain in the backup directory
+# Older backups beyond this count will be automatically deleted
+# Set to 0 to disable automatic cleanup (keep all backups)
+# Example: "7" to keep the last 7 backups, "30" to keep the last 30 backups
+BACKUP_RETENTION_COUNT="7"
+
 # ==============================================================================
 # S3 CONFIGURATION (for sync_backups_to_s3.sh)
 # ==============================================================================

@@ -76,6 +76,11 @@ main() {
     local file_size
     file_size=$(du -h "${backup_file}" | cut -f1)
     
+    log_message "Backup created successfully: ${backup_file} (${file_size})"
+    
+    # Clean up old backups based on retention policy
+    cleanup_old_backups
+    
     # Success!
     exit_with_success "${SCRIPT_NAME}" "Database backup completed successfully: ${backup_file} (${file_size})"
 }
